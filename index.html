@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Estante de leitura</title>
+<meta name="theme-color" content="#6C63D9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Estante">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF0FB; --paper:#FFFFFF; --ink:#23234A; --soft:#5D5D84; --line:#D5D8F0;
+  --wood:#9A6440; --wood-dark:#6E4329; --accent:#6C63D9; --accent-ink:#FFFFFF; --star:#F2A922;
+  --danger:#C23B55; --shadow:0 2px 0 rgba(35,35,74,.12);
+  color-scheme:light;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#17172E; --paper:#23233F; --ink:#EDEBFF; --soft:#A9A8CC; --line:#36365A;
+    --wood:#7A4E33; --wood-dark:#4E3020; --accent:#8F88F0; --accent-ink:#17172E; --star:#F5BE4A; --danger:#EF7A90;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17172E; --paper:#23233F; --ink:#EDEBFF; --soft:#A9A8CC; --line:#36365A;
+  --wood:#7A4E33; --wood-dark:#4E3020; --accent:#8F88F0; --accent-ink:#17172E; --star:#F5BE4A; --danger:#EF7A90;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 Nunito,"Trebuchet MS",system-ui,sans-serif}
+h1,h2,h3,.display{font-family:Fredoka,"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;font-weight:600;line-height:1.15}
+.wrap{max-width:980px;margin:0 auto;padding:28px 20px 60px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:8px}
+h1{font-size:clamp(2.1rem,6vw,3.4rem);margin:0;letter-spacing:-.01em}
+.namebtn{background:none;border:0;color:var(--soft);font:inherit;font-size:.9rem;text-decoration:underline;cursor:pointer;padding:4px 0}
+.summary{color:var(--soft);margin:6px 0 0;max-width:60ch}
+.add{background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:12px 22px;font:600 1.05rem Fredoka,"Trebuchet MS",sans-serif;cursor:pointer;box-shadow:var(--shadow)}
+.add:hover{filter:brightness(1.06)}
+.btnrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.wa{display:inline-block;border:2px solid var(--line);color:var(--ink);background:var(--paper);border-radius:999px;padding:10px 18px;font:600 1rem Fredoka,"Trebuchet MS",sans-serif;text-decoration:none}
+.wa:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,.spine:focus-visible{outline:3px solid var(--star);outline-offset:2px}
+.status{font-size:.85rem;color:var(--soft);min-height:1.3em;margin-top:4px}
+
+section.shelf{margin-top:38px}
+.shelf h2{font-size:1.5rem;margin:0 0 2px}
+.shelf p.hint{margin:0 0 12px;color:var(--soft);font-size:.95rem}
+.rack{overflow-x:auto;padding:10px 6px 0;border-bottom:16px solid var(--wood);border-radius:2px;box-shadow:0 6px 0 var(--wood-dark)}
+.row{display:flex;align-items:flex-end;gap:5px;min-height:212px;padding:0 4px}
+.empty{align-self:center;color:var(--soft);font-style:italic;padding:0 8px}
+.spine{position:relative;flex:0 0 auto;border:0;border-radius:4px 4px 1px 1px;cursor:pointer;padding:10px 0;color:#fff;
+  display:flex;align-items:center;justify-content:center;box-shadow:inset -5px 0 0 rgba(0,0,0,.14),inset 3px 0 0 rgba(255,255,255,.18);
+  transition:transform .18s ease}
+.spine:hover{transform:translateY(-8px)}
+.spine span{writing-mode:vertical-rl;transform:rotate(180deg);font:600 .95rem/1.1 Fredoka,"Trebuchet MS",sans-serif;
+  max-height:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 0 rgba(0,0,0,.2)}
+.spine i{position:absolute;top:6px;left:50%;transform:translateX(-50%);font-style:normal;font-size:.7rem;background:rgba(255,255,255,.9);color:#5a3d00;border-radius:999px;padding:0 5px;line-height:1.5}
+.spine.dark{color:#2b2240}
+.spine.dark span{text-shadow:none}
+
+dialog{border:0;border-radius:18px;padding:0;background:var(--paper);color:var(--ink);width:min(560px,94vw);max-height:90vh;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(20,20,45,.45)}
+.dlg{padding:24px 24px 20px;overflow:auto;max-height:90vh}
+.dlg h3{font-size:1.6rem;margin:0}
+.by{color:var(--soft);margin:2px 0 14px}
+.band{height:10px;border-radius:999px;margin:-4px 0 16px}
+label{display:block;font-weight:700;font-size:.92rem;margin:14px 0 5px}
+input[type=text],input[type=date],textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:9px 12px}
+textarea{min-height:90px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:7px 14px;font:inherit;font-size:.95rem;cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+.stars{display:flex;gap:2px}
+.stars button{background:none;border:0;font-size:1.9rem;line-height:1;cursor:pointer;color:var(--line);padding:2px}
+.stars button.on{color:var(--star)}
+.showstars{color:var(--star);font-size:1.3rem;letter-spacing:2px}
+.block{margin:14px 0 0}
+.block h4{margin:0 0 3px;font:600 1rem Fredoka,"Trebuchet MS",sans-serif;color:var(--soft)}
+.block p{margin:0;white-space:pre-wrap}
+.actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;margin-top:22px}
+.btn{border:2px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:9px 18px;font:600 1rem Fredoka,"Trebuchet MS",sans-serif;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--danger);border-color:transparent;margin-right:auto}
+.err{color:var(--danger);font-size:.9rem;margin:6px 0 0}
+@media (prefers-reduced-motion:reduce){.spine{transition:none}.spine:hover{transform:none}}
+@media (max-width:520px){.wrap{padding:20px 14px 48px}.dlg{padding:20px 16px 16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 id="title">Estante de leitura</h1>
+      <button class="namebtn" id="nameBtn" type="button">Colocar o nome da leitora</button>
+      <p class="summary" id="summary"></p>
+      <div class="status" id="status" role="status"></div>
+    </div>
+    <div class="btnrow"><button class="add" id="addBtn" type="button">+ Adicionar livro</button><a class="wa" id="waBtn" href="#" target="_blank" rel="noopener">Mandar minha lista no WhatsApp</a></div>
+    <div class="btnrow" style="margin-top:10px"><button class="namebtn" id="expBtn" type="button">Baixar cópia de segurança</button><button class="namebtn" id="impBtn" type="button">Restaurar cópia</button><input type="file" id="impFile" accept=".json,application/json" hidden></div>
+  </header>
+
+  <section class="shelf" aria-labelledby="h-lendo">
+    <h2 id="h-lendo">Lendo agora</h2>
+    <p class="hint">O livro da cabeceira.</p>
+    <div class="rack"><div class="row" id="row-lendo"></div></div>
+  </section>
+  <section class="shelf" aria-labelledby="h-quero">
+    <h2 id="h-quero">Quero ler</h2>
+    <p class="hint">A fila dos próximos.</p>
+    <div class="rack"><div class="row" id="row-quero"></div></div>
+  </section>
+  <section class="shelf" aria-labelledby="h-lido">
+    <h2 id="h-lido">Já li</h2>
+    <p class="hint">Toque num livro para ver o resumo e o que ela achou.</p>
+    <div class="rack"><div class="row" id="row-lido"></div></div>
+  </section>
+</div>
+
+<dialog id="view"><div class="dlg" id="viewBody"></div></dialog>
+<dialog id="edit"><form class="dlg" id="form" method="dialog" novalidate></form></dialog>
+<dialog id="nameDlg"><form class="dlg" id="nameForm" method="dialog">
+  <h3>Qual o nome dela?</h3>
+  <label for="nameInput">Nome</label>
+  <input type="text" id="nameInput" maxlength="40" autocomplete="off">
+  <div class="actions"><button class="btn" value="cancel" type="button" id="nameCancel">Cancelar</button><button class="btn primary" type="submit">Salvar nome</button></div>
+</form></dialog>
+
+<script>
+(function(){
+  var COLORS=[["#E85D75",0],["#F5B83D",1],["#3FA39B",0],["#6C63D9",0],["#2F6FD1",0],["#F08A4B",0],["#8BC34A",1],["#C66BC2",0],["#4E5BA6",0],["#F7D76B",1]];
+  var LABEL={lido:"Já li",lendo:"Lendo agora",quero:"Quero ler"};
+  var state;
+  state={rev:0,nome:"",livros:[]};
+  try{var loc=JSON.parse(localStorage.getItem("estante")||"null");if(loc&&Array.isArray(loc.livros))state=loc}catch(e){}
+  var $=function(id){return document.getElementById(id)};
+
+  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+  function uid(){return "b"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+  function hash(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return Math.abs(h)}
+  function stars(n){var s="";for(var i=1;i<=5;i++)s+=i<=n?"★":"☆";return s}
+  function setStatus(t){$("status").textContent=t}
+
+  function render(){
+    var nome=state.nome.trim();
+    $("title").textContent=nome?"Estante da "+nome:"Estante de leitura";
+    document.title=$("title").textContent;
+    $("nameBtn").textContent=nome?"Trocar o nome":"Colocar o nome da leitora";
+    var c={lido:0,lendo:0,quero:0};
+    state.livros.forEach(function(b){c[b.status]++});
+    var parts=[];
+    if(c.lido)parts.push((c.lido===1?"Já leu 1 livro":"Já leu "+c.lido+" livros"));
+    if(c.lendo)parts.push((c.lendo===1?"está lendo 1":"está lendo "+c.lendo));
+    if(c.quero)parts.push((c.quero===1?"tem 1 esperando na fila":"tem "+c.quero+" esperando na fila"));
+    var txt=parts.length?parts.join(", ").replace(/, ([^,]*)$/," e $1")+".":"A estante ainda está vazia. Adicione o primeiro livro!";
+    $("summary").textContent=txt.charAt(0).toUpperCase()+txt.slice(1);
+    ["lendo","quero","lido"].forEach(function(st){
+      var row=$("row-"+st);row.textContent="";
+      var list=state.livros.filter(function(b){return b.status===st});
+      if(st==="lido")list.sort(function(a,b){return (b.data||"").localeCompare(a.data||"")});
+      if(!list.length){var e=document.createElement("div");e.className="empty";
+        e.textContent=st==="lendo"?"Nenhum livro aberto no momento.":st==="quero"?"Nada na fila ainda.":"Os livros terminados aparecem aqui.";
+        row.appendChild(e);return}
+      list.forEach(function(b){
+        var h=hash(b.id+b.titulo), col=COLORS[b.cor!=null?b.cor:h%COLORS.length];
+        var btn=document.createElement("button");btn.type="button";btn.className="spine"+(col[1]?" dark":"");
+        btn.style.background=col[0];
+        btn.style.height=(160+h%46)+"px";
+        btn.style.width=Math.min(64,Math.max(40,26+b.titulo.length*1.1))+"px";
+        btn.setAttribute("aria-label",b.titulo+(b.autor?", de "+b.autor:""));
+        var sp=document.createElement("span");sp.textContent=b.titulo;btn.appendChild(sp);
+        if(b.status==="lido"&&b.nota){var i=document.createElement("i");i.textContent=b.nota+"★";btn.appendChild(i)}
+        btn.addEventListener("click",function(){openView(b.id)});
+        row.appendChild(btn);
+      });
+    });
+  }
+
+  function find(id){for(var i=0;i<state.livros.length;i++)if(state.livros[i].id===id)return state.livros[i]}
+
+  function openView(id){
+    var b=find(id);if(!b)return;
+    var col=COLORS[b.cor!=null?b.cor:hash(b.id+b.titulo)%COLORS.length][0];
+    var h='<div class="band" style="background:'+col+'"></div><h3>'+esc(b.titulo)+'</h3>'+
+      '<p class="by">'+(b.autor?esc(b.autor)+". ":"")+esc(LABEL[b.status])+(b.status==="lido"&&b.data?", terminado em "+esc(fmtDate(b.data)):"")+'</p>';
+    if(b.status==="lido"&&b.nota)h+='<div class="showstars" aria-label="Nota '+b.nota+' de 5">'+stars(b.nota)+'</div>';
+    if(b.resumo)h+='<div class="block"><h4>Resumo</h4><p>'+esc(b.resumo)+'</p></div>';
+    if(b.opiniao)h+='<div class="block"><h4>O que achei</h4><p>'+esc(b.opiniao)+'</p></div>';
+    if(b.favorito)h+='<div class="block"><h4>Parte ou personagem favorito</h4><p>'+esc(b.favorito)+'</p></div>';
+    if(!b.resumo&&!b.opiniao&&!b.favorito)h+='<p class="block" style="color:var(--soft)">Ainda sem resumo nem opinião. Toque em Editar para escrever.</p>';
+    h+='<div class="actions"><button class="btn" type="button" data-a="close">Fechar</button>';
+    if(b.status==="quero")h+='<button class="btn" type="button" data-a="start">Comecei a ler</button>';
+    if(b.status==="lendo")h+='<button class="btn" type="button" data-a="finish">Terminei!</button>';
+    h+='<button class="btn primary" type="button" data-a="edit">Editar</button></div>';
+    $("viewBody").innerHTML=h;
+    $("viewBody").onclick=function(e){
+      var a=e.target.getAttribute&&e.target.getAttribute("data-a");if(!a)return;
+      if(a==="close")$("view").close();
+      if(a==="edit"){$("view").close();openEdit(b.id)}
+      if(a==="start"){b.status="lendo";change();$("view").close()}
+      if(a==="finish"){$("view").close();openEdit(b.id,"lido")}
+    };
+    $("view").showModal();
+  }
+  function fmtDate(d){var p=d.split("-");return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:d}
+  function today(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+
+  function openEdit(id,forceStatus){
+    var b=id?find(id):null;
+    var f={titulo:b?b.titulo:"",autor:b?b.autor:"",status:forceStatus||(b?b.status:"quero"),nota:b?b.nota||0:0,
+      resumo:b?b.resumo:"",opiniao:b?b.opiniao:"",favorito:b?b.favorito:"",data:b&&b.data?b.data:""};
+    if(f.status==="lido"&&!f.data)f.data=today();
+    var form=$("form");
+    form.innerHTML='<h3>'+(b?"Editar livro":"Novo livro")+'</h3>'+
+      '<label for="f-t">Título</label><input type="text" id="f-t" maxlength="120" autocomplete="off">'+
+      '<p class="err" id="f-err" hidden>Escreva o título do livro.</p>'+
+      '<label for="f-a">Autor ou autora</label><input type="text" id="f-a" maxlength="100" autocomplete="off">'+
+      '<label id="l-st">Em qual prateleira?</label><div class="chips" role="group" aria-labelledby="l-st" id="f-st">'+
+        '<button type="button" class="chip" data-s="quero">Quero ler</button><button type="button" class="chip" data-s="lendo">Lendo agora</button><button type="button" class="chip" data-s="lido">Já li</button></div>'+
+      '<div id="f-done"><label id="l-n">Nota</label><div class="stars" role="group" aria-labelledby="l-n" id="f-n"></div>'+
+        '<label for="f-d">Terminei em</label><input type="date" id="f-d"></div>'+
+      '<label for="f-r">Resumo</label><textarea id="f-r" maxlength="3000" placeholder="Sobre o que é a história, com as suas palavras."></textarea>'+
+      '<label for="f-o">O que achei</label><textarea id="f-o" maxlength="3000" placeholder="Gostou? Por quê? Indicaria para alguém?"></textarea>'+
+      '<label for="f-f">Parte ou personagem favorito</label><input type="text" id="f-f" maxlength="200" autocomplete="off">'+
+      '<div class="actions">'+(b?'<button class="btn danger" type="button" id="f-del">Tirar da estante</button>':'')+
+      '<button class="btn" type="button" id="f-cancel">Cancelar</button><button class="btn primary" type="submit">Salvar livro</button></div>';
+    $("f-t").value=f.titulo;$("f-a").value=f.autor;$("f-r").value=f.resumo;$("f-o").value=f.opiniao;$("f-f").value=f.favorito;$("f-d").value=f.data;
+    function paint(){
+      Array.prototype.forEach.call($("f-st").children,function(c){c.setAttribute("aria-pressed",c.getAttribute("data-s")===f.status?"true":"false")});
+      $("f-done").hidden=f.status!=="lido";
+      var s=$("f-n");s.textContent="";
+      for(var i=1;i<=5;i++){(function(n){var x=document.createElement("button");x.type="button";x.textContent="★";x.className=n<=f.nota?"on":"";
+        x.setAttribute("aria-label",n+(n===1?" estrela":" estrelas"));x.setAttribute("aria-pressed",n===f.nota?"true":"false");
+        x.onclick=function(){f.nota=f.nota===n?0:n;paint()};s.appendChild(x)})(i)}
+    }
+    $("f-st").onclick=function(e){var s=e.target.getAttribute&&e.target.getAttribute("data-s");if(s){f.status=s;if(s==="lido"&&!$("f-d").value)$("f-d").value=today();paint()}};
+    paint();
+    $("f-cancel").onclick=function(){$("edit").close()};
+    if(b)$("f-del").onclick=function(){
+      if(confirm("Tirar “"+b.titulo+"” da estante? Isso apaga o resumo e a opinião também.")){
+        state.livros=state.livros.filter(function(x){return x.id!==b.id});$("edit").close();change()}
+    };
+    form.onsubmit=function(e){
+      e.preventDefault();
+      var t=$("f-t").value.trim();
+      if(!t){$("f-err").hidden=false;$("f-t").focus();return}
+      var obj=b||{id:uid(),cor:Math.floor(Math.random()*COLORS.length)};
+      obj.titulo=t;obj.autor=$("f-a").value.trim();obj.status=f.status;obj.nota=f.status==="lido"?f.nota:(obj.nota||0);
+      obj.resumo=$("f-r").value.trim();obj.opiniao=$("f-o").value.trim();obj.favorito=$("f-f").value.trim();
+      obj.data=f.status==="lido"?$("f-d").value:"";
+      if(!b)state.livros.push(obj);
+      $("edit").close();change();
+    };
+    $("edit").showModal();$("f-t").focus();
+  }
+
+  $("addBtn").onclick=function(){openEdit(null)};
+  $("nameBtn").onclick=function(){$("nameInput").value=state.nome;$("nameDlg").showModal()};
+  $("nameCancel").onclick=function(){$("nameDlg").close()};
+  $("nameForm").onsubmit=function(e){e.preventDefault();state.nome=$("nameInput").value.trim();$("nameDlg").close();change()};
+
+  function change(){state.rev=(state.rev||0)+1;render();persist()}
+
+  function persist(){
+    try{localStorage.setItem("estante",JSON.stringify(state));setStatus("Salvo neste aparelho.")}
+    catch(e){setStatus("Não deu para salvar. Verifique se o navegador não está em modo anônimo.")}
+  }
+  $("expBtn").onclick=function(){
+    var blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+    var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="estante-"+today()+".json";
+    document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1000);
+  };
+  $("impBtn").onclick=function(){$("impFile").click()};
+  $("impFile").onchange=function(){
+    var f=this.files[0];if(!f)return;var r=new FileReader();
+    r.onload=function(){try{var d=JSON.parse(r.result);if(!d||!Array.isArray(d.livros))throw 0;
+      if(confirm("Trocar a estante atual pela cópia ("+d.livros.length+" livros)?")){state=d;render();persist()}}
+      catch(e){alert("Esse arquivo não é uma cópia da estante.")}};
+    r.readAsText(f);this.value="";
+  };
+  function listText(){
+    var nome=state.nome.trim();
+    var out=["📚 "+(nome?"Estante da "+nome:"Minha estante de leitura")];
+    [["lendo","Lendo agora"],["quero","Quero ler"],["lido","Já li"]].forEach(function(p){
+      var l=state.livros.filter(function(b){return b.status===p[0]});if(!l.length)return;
+      out.push("","*"+p[1]+"*");
+      l.forEach(function(b){
+        var line="• "+b.titulo+(b.autor?" ("+b.autor+")":"");
+        if(p[0]==="lido"&&b.nota)line+=" "+stars(b.nota);
+        out.push(line);
+        if(b.resumo)out.push("  Resumo: "+b.resumo);
+        if(b.opiniao)out.push("  O que achei: "+b.opiniao);
+        if(b.favorito)out.push("  Favorito: "+b.favorito);
+      });
+    });
+    return out.join("\n");
+  }
+  $("waBtn").addEventListener("click",function(){this.href="https://wa.me/?text="+encodeURIComponent(listText())});
+  $("waBtn").addEventListener("focus",function(){this.href="https://wa.me/?text="+encodeURIComponent(listText())});
+
+  render();
+})();
+</script>
+</body>
+</html>
